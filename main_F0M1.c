@@ -54,7 +54,7 @@ sfr16 DAC1     = 0xd5;
 // SYSCLK frequency in Hz
 #define BAUDRATE     19200
 // Baud rate of UART in bps
-#define RX_LENGTH    16
+#define RX_LENGTH    60
 // length of UART RX buffer
 sbit LED = P1^6; // LED = 1 means ON
 
@@ -65,11 +65,16 @@ struct COMMANDES commandes; //On declare une structure
 void SYSCLK_Init (void);
 void PORT_Init (void);
 void UART0_Init (void);
-void UART0_ISR (void);
+
+
+
 void HQ_CM (void);
 void CM_HQ (void);
+
 void Send_char (char);
 void Send_string(char*);
+char Recup_char(void);
+
 //-----------------------------------------------------------------------------
 // Global VARIABLES
 //-----------------------------------------------------------------------------
@@ -79,7 +84,9 @@ char *TX_ptr;
 // pointer to string to transmit
 bit RX_Ready;
 // ‘1’ means RX string received
-char idata RX_Buf[RX_LENGTH];
+
+char idata RX_Buf[RX_LENGTH]="";
+char* RX_ptr=&RX_Buf[0];
 // receive string storage buffer
 
 char idata CMD[RX_LENGTH]; // Buffer de sauvegarde de la commande
@@ -98,15 +105,18 @@ void main (void) {
 
 	WDTCN = 0xde; // disable watchdog timer
 	WDTCN = 0xad;
+	
 	SYSCLK_Init(); // initialize oscillator
 	PORT_Init (); // initialize crossbar and GPIO   
 	UART0_Init (); // initialize UART0   
+	
 	Send_string("Tapez une cmd ");
-	// wait for TX ready
+	
 	while (1){
-      while (RX_Ready == 0) ; // wait for string
-      while (!TX_Ready) ; // wait for transmitter to be available
-			HQ_CM();
+      if(RI0 == 1)
+				{
+					HQ_CM();
+				}
       TX_Ready = 0; // claim transmitter
       TX_ptr = test; // set TX buffer pointer to point to
 			// received message
@@ -119,6 +129,7 @@ void main (void) {
       RX_Ready = 0; // free the receiver   
 		}
 }
+
 
 //-----------------------------------------------------------------------------
 // Initialization Subroutines
@@ -186,6 +197,42 @@ void SYSCLK_Init (void){
 //-----------------------------------------------------------------------------
 void HQ_CM(void)
 	{
+		char char_unique;
+		
+		char_unique = Recup_char(); // On récupère le caractère reçu.
+		
+		*RX_ptr = char_unique; // On stocke ds le buffer tout les caractères.
+		*(RX_ptr + 1) = '\0';
+		RX_ptr++;
+		
+		Send_char(char_unique); // On le renvoie pour savoir ce qu'on a tapé
+		
+		
+		if (char_unique == '\r')
+		{
+			
+			
+			
+			RX_ptr = &RX_Buf[0]; // On re place le ptr au début.
+		}
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		int cmd_param=0;
 		int index = 0;
 		int s_cmd = 2;
@@ -672,16 +719,9 @@ void CM_HQ(void)
 	{
 	}
 //-----------------------------------------------------------------------------
-// send_char et Send_char Sous-routine pour envoyer un char et string
+// send_char et Send_string Sous-routines pour envoyer un char et string
 //-----------------------------------------------------------------------------
-//void send_char (char* message)
-//	{
-//		char temp[24];
-//		sprintf(temp, "%s\r\n", message);
-//		TX_Ready = 0; // claim transmitter
-//    TX_ptr = temp; // pointe vers le message à transmettre
-//		TI0 = 1; // start transmit
-//	}
+
 	
 	
 	
@@ -690,6 +730,7 @@ void Send_char(char c)
 {
 	
 	//Desactive reception
+	
 	REN0 = 0;
 	SBUF0 = c;
 	
@@ -709,11 +750,39 @@ void Send_string(char* mot)
 			
 			//Check si on est en train de lire l'avant-dernier caractere (le tout dernier caractere est l'appuie de la touche ENTER)
 			Send_char(*mot);
+			
 			mot++;
 		}
+		
 		Send_char('\r');
 		Send_char('\n'); //Retour à la ligne
 }
+
+
+
+//-----------------------------------------------------------------------------
+// Recup_char sous-routine de récupération des char 
+//-----------------------------------------------------------------------------
+char Recup_char(void)
+{
+		
+	char c;
+
+	//Desactive la reception
+	RI0 = 0;
+	REN0 = 0;
+	
+	//Recup le caractere
+	c = SBUF0;
+	
+	//Reactive la reception
+	REN0 = 1;
+	
+	return c;
+}
+
+
+
 //-----------------------------------------------------------------------------
 // Interrupt Handlers
 //-----------------------------------------------------------------------------
@@ -739,78 +808,4 @@ void Send_string(char* mot)
 // received while <RX_Ready> is ‘1’ are ignored.
 //
 
-
-
-
-// ON NE PASSE PLUS PAR UN INTERRUPT  
-
-
-//void UART0_ISR (void) interrupt 4 using 3
-//	{
-//	static unsigned char RX_index = 0;
-//  // receive buffer index   
-//	unsigned char the_char;
-//	if (RI0 == 1) // Si on reçoit un message
-//		{ // handle receive function 
-//			RI0 = 0; // clear RX complete indicator 
-//			if (RX_Ready != 1) 
-//				{ // check to see if message pending 
-//					the_char = SBUF0;
-//					if (the_char != '\r') 
-//						{ // On check la fin du message  
-//				
-//							RX_Buf[RX_index] = the_char; // store the character  
-//					
-//				// increment buffer pointer and wrap if necessary  
-//							if (RX_index < (RX_LENGTH - 2)) 
-//								{
-//									RX_index++;
-//								}
-//							else 
-//								{
-//									RX_index = 0;
-//						// if length exceeded, 
-//									RX_Ready = 1;
-//							// post message complete, and  
-//							// <CR>-terminate string
-//									RX_Buf[RX_index-1] = '\r';
-//								}
-//					}
-//						else
-//							{
-//								RX_Buf[RX_index] = '\r';   
-//				// <CR>-terminate message 
-//								RX_Ready = 1; 
-//				// post message ready
-//								RX_index = 0;
-//				// reset RX message index
-//							}
-//						
-//					}
-//				else
-//					{
-//					// ignore character -- previous message has not been processed  
-//					}
-//				}
-//		else if (TI0 == 1) // Si on envoie un message 
-//			{   
-//						// handle transmit function 
-//				TI0 = 0;
-//						// clear TX complete indicator 
-//				the_char = *TX_ptr; 
-//						// read next character in string
-//				if (the_char != '\r')
-//					{ 
-//						SBUF0 = the_char;  
-//							// transmit it  
-//						TX_ptr++; 
-//							// get ready for next character 
-//					}
-//					else
-//						{
-//								// character is <CR>
-//							TX_Ready = 1;
-//								// indicate ready for next TX 
-//						}  
-//			}
-//	}
+//ON NE PASSE PLUS PAR UNE INTERRUPT

@@ -54,8 +54,7 @@ sfr16 DAC1     = 0xd5;
 // SYSCLK frequency in Hz
 #define BAUDRATE     19200
 // Baud rate of UART in bps
-#define RX_LENGTH    60
-// length of UART RX buffer
+
 sbit LED = P1^6; // LED = 1 means ON
 
 struct COMMANDES commandes; //On declare une structure
@@ -75,6 +74,11 @@ void Send_char (char);
 void Send_string(char*);
 char Recup_char(void);
 
+char separ_cmd(char*, char*);
+
+void Reset_buff_ptr(void);
+
+
 //-----------------------------------------------------------------------------
 // Global VARIABLES
 //-----------------------------------------------------------------------------
@@ -85,19 +89,33 @@ char *TX_ptr;
 bit RX_Ready;
 // ‘1’ means RX string received
 
-char idata RX_Buf[RX_LENGTH]="";
+char RX_Buf[50]="";
 char* RX_ptr=&RX_Buf[0];
 // receive string storage buffer
 
-char idata CMD[RX_LENGTH]; // Buffer de sauvegarde de la commande
-char idata PARAM[RX_LENGTH]; // Buffer de sauvegarde des param
-char idata M_CMD[RX_LENGTH];
-char idata test[RX_LENGTH];
+char CMD[15]=""; // Buffer de sauvegarde de la commande
+char* ptr_CMD = &CMD[0];
+
+char PARAM_1[10]=""; // Buffer de sauvegarde des param 1
+char* ptr_PARAM_1 = &PARAM_1[0];
+
+char PARAM_2[10]=""; // Buffer de sauvegarde des param 2
+char* ptr_PARAM_2 = &PARAM_2[0];
+
+char PARAM_3[10]=""; // Buffer de sauvegarde des param 3
+char* ptr_PARAM_3 = &PARAM_3[0];
+
+char PARAM_4[10]=""; // Buffer de sauvegarde des param 4
+char* ptr_PARAM_4 = &PARAM_4[0];
 
 
 
 
-char idata *p_test;
+char test[5];
+
+int nb_cmd;
+
+char *p_test;
 //-----------------------------------------------------------------------------
 // MAIN Routine
 //-----------------------------------------------------------------------------
@@ -210,506 +228,41 @@ void HQ_CM(void)
 		
 		if (char_unique == '\r')
 		{
+			Send_char('\n'); // retour à la ligne
 			
+			Reset_buff_ptr(); // On initialise nos buffers à vide pour être certain de connaitre leur contenu
 			
+			// On commence à séparer le contenu de RX_Buf en sous buffers appropriés.
+			separ_cmd(RX_ptr , ptr_CMD );
 			
-			RX_ptr = &RX_Buf[0]; // On re place le ptr au début.
-		}
-	
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		int cmd_param=0;
-		int index = 0;
-		int s_cmd = 2;
-		char idata *p_RX;
-		
-		p_RX = RX_Buf;
-		
-		for(p_RX=RX_Buf;p_RX < RX_Buf + RX_LENGTH;p_RX++) // On itère à travers notre chaine de char
-			{	
-				switch(cmd_param)
-					{
-					case 0:
-						CMD[index] = *p_RX; // On passe char par char à l'array CMD
-						index++;
-					
-						if(*(p_RX + 1) == 0x20) // Si le char suivant est un espace on passe à la partie param
-							{
-								cmd_param = 1;
-								//CMD[index]='\r';
-								index = 0;
-								p_RX++;
-							}
-							
-						if(*(p_RX + 1) == 0x0D) // Si le char suivant est une fin de chaine on a terminé
-							{
-								cmd_param = 2;
-								//CMD[index] = '\0';
-							}
-						break;	
-					case 1:
-						if(*p_RX != 0x20)
-							{
-								PARAM[index] = *p_RX;
-								index++;
-								
-								if(*(p_RX + 1) == 0x0D) // Si le char suivant est un retour chariot on a terminé
-								{
-									//PARAM[index]='\0';
-								}
-							}
-							break;
-					}
-				}
-			
-				
-			
-				
-			M_CMD[0] = 'D'; // Cmd Début d'épreuve
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=1;
-				}
-				
-			
-				
-			M_CMD[0] = 'E'; // Cmd Fin d'épreuve
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=2;
-				}
-			
-				
-				
-			M_CMD[0] = 'Q'; // Cmd Arrêt d'urgence
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=3;
-				}
-			
-
-				
-			M_CMD[0] = 'A'; // Cmd Avancer
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=4;
-				}	
-				
-				
-				
-			M_CMD[0] = 'B'; // Cmd Reculer
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=5;
-				}
-
-				
-				
-			M_CMD[0] = 'S'; // Cmd Stop (pour fin A et B)
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=6;
-				}
-				
-				
-
-			M_CMD[0] = 'T'; // Cmd Réglage Vitesse
-			M_CMD[1] = 'V';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=7;
-				}
-				
-				
-			
-			M_CMD[0] = 'R'; // Cmd Rotation Droite
-			M_CMD[1] = 'D';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=8;
-				}	
-				
-			
-
-			M_CMD[0] = 'R'; // Cmd Rotation Gauche
-			M_CMD[1] = 'G';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=9;
-				}	
-
-				
-				
-			M_CMD[0] = 'R'; // Cmd Rotation complète(sens horaire / anti-horaire)
-			M_CMD[1] = 'C';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=10;
-				}
-			
-				
-				
-			M_CMD[0] = 'R'; // Cmd Rotation partielle (sens horaire / anti-horaire)
-			M_CMD[1] = 'A';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=11;
-				}
-				
-			
-			
-			M_CMD[0] = 'G'; // Cmd Déplacement par coord
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=12;
-				}
-				
-				
-			M_CMD[0] = 'A'; // Cmd Acquisition son 
-			M_CMD[1] = 'S';	
-			M_CMD[2] = 'S';
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=13;
-				}	
-				
-				
-			
-			M_CMD[0] = 'M'; // Cmd Mesure Courant // CMD PAS IMPLENTEE
-			M_CMD[1] = 'I';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=14;
-				}
-
-
-
-			M_CMD[0] = 'M'; // Cmd Mesure Courant // CMD PAS IMPLENTEE
-			M_CMD[1] = 'E';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=15;
-				}	
-
-
-			
-			M_CMD[0] = 'I'; // Cmd initialisation pos robot coord
-			M_CMD[1] = 'P';	
-			M_CMD[2] = 'O';
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=16;
-				}	
-
-
-				
-			M_CMD[0] = 'P'; // Cmd Position base roulante 
-			M_CMD[1] = 'O';	
-			M_CMD[2] = 'S';
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=17;
-				}
-				
-			
-				
-				
-				
-			M_CMD[0] = 'M'; // Cmd Detection d'obstacle unique 
-			M_CMD[1] = 'O';	
-			M_CMD[2] = 'U';
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=18;
-				}
-				
-				
-				
-			M_CMD[0] = 'M'; // Cmd Detection d'obstacle par balayage 
-			M_CMD[1] = 'O';	
-			M_CMD[2] = 'B';
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=19;
-				}
-				
-				
-				
-			M_CMD[0] = 'M'; // Cmd Detection d'obstacle le plus proche par balayage 
-			M_CMD[1] = 'O';	
-			M_CMD[2] = 'S';
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=20;
-				}	
-				
-				
-				
-			M_CMD[0] = 'S'; // Cmd Génération de signaux sonores 
-			M_CMD[1] = 'D';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=21;
-				}
-				
-				
-				
-			M_CMD[0] = 'L'; // Cmd Allumage pointeur lumineux
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=22;
-				}	
-				
-				
-				
-			M_CMD[0] = 'L'; // Cmd Extinction pointeur lumineux
-			M_CMD[1] = 'S';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=23;
-				}
-				
-				
-				
-			M_CMD[0] = 'C'; // Cmd Pilotage servomoteur
-			M_CMD[1] = 'S';	
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=24;
-				}
-				
-				
-			M_CMD[0] = 'P'; // Cmd Prise de photographie
-			M_CMD[1] = 'P';	
-			M_CMD[2] = 'H';
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=25;
-				}	
-				
-				
-			
-			M_CMD[0] = 'S'; // Cmd Arrêt prise de photographie
-			M_CMD[1] = 'P';	
-			M_CMD[2] = 'H';
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=26;
-				}			
-
-
-
-			M_CMD[0] = 'A'; // Cmd Auxiliaires
-			M_CMD[1] = 'U';	
-			M_CMD[2] = 'X';
-			if(strcmp(CMD,M_CMD)==0)
-				{
-					s_cmd=27;
-				}				
-				
-	
-				
-				
-				
-			
-				
-				
-		switch(s_cmd)
-			{     // Int or Enum type !
-			
-				
-			case 0: 
-				test[0] = 'N';
-				test[1] = '\r';
-				break;
-			
-			
-			case 1:
-				test[0] = 'D';
-				test[1] = '\r';
-				break;
-			
-			case 2:
-				test[0] = 'E';
-				test[1] = '\r';
-				break;
-			
-			case 3:
-				test[0] = 'Q';
-				test[1] = '\r';
-				break;
-			
-			case 4:
-				test[0] = 'T';
-				test[1] = 'V';
-				test[2] = '\r';
-				break;
-			
-			case 5:
-				test[0] = 'A';
-				test[1] = '\r';
-				break;
-			
-			case 6:
-				test[0] = 'B';
-				test[1] = '\r';
-				break;
-			
-			case 7:
-				test[0] = 'S';
-				test[1] = '\r';
-				break;
-			
-			case 8:
-				test[0] = 'R';
-				test[1] = 'D';
-				test[2] = '\r';
-				break;
-			
-			case 9:
-				test[0] = 'R';
-				test[1] = 'G';
-				test[2] = '\r';
-				break;
-			
-			case 10:
-				test[0] = 'R';
-				test[1] = 'C';
-				test[2] = '\r';
-				break;
-			
-			case 11:
-				test[0] = 'R';
-				test[1] = 'A';
-				test[2] = '\r';
-				break;
-			
-			case 12:
-				test[0] = 'G';
-				test[1] = '\r';
-				break;
-			
-			case 13:
-				test[0] = 'A';
-				test[1] = 'S';
-				test[2] = 'S';
-				test[3] = '\r';
-				break;
-			
-			case 14:
-				test[0] = 'M';
-				test[1] = 'I';
-				test[2] = '\r';
-				break;
-			
-			case 15:
-				test[0] = 'M';
-				test[1] = 'E';
-				test[2] = '\r';
-				break;
-			
-			case 16:
-				test[0] = 'I';
-				test[1] = 'P';
-				test[2] = 'O';
-				test[3] = '\r';
-				break;
-			
-			case 17:
-				test[0] = 'P';
-				test[1] = 'O';
-				test[2] = 'S';
-				test[3] = '\r';
-				break;
-			
-			case 18:
-				test[0] = 'M';
-				test[1] = 'O';
-				test[2] = 'U';
-				test[3] = '\r';
-				break;
-			
-			case 19:
-				test[0] = 'M';
-				test[1] = 'O';
-				test[2] = 'B';
-				test[3] = '\r';
-				break;
-			
-			case 20:
-				test[0] = 'M';
-				test[1] = 'O';
-				test[2] = 'S';
-				test[3] = '\r';
-				break;
-			
-			case 21:
-				test[0] = 'S';
-				test[1] = 'D';
-				test[2] = '\r';
-				break;
-			
-			case 22:
-				test[0] = 'L';
-				test[1] = '\r';
-				break;
-			
-			case 23:
-				test[0] = 'L';
-				test[1] = 'S';
-				test[2] = '\r';
-				break;
-			
-			case 24:
-				test[0] = 'C';
-				test[1] = 'S';
-				test[2] = '\r';
-				break;
-			
-			case 25:
-				test[0] = 'P';
-				test[1] = 'P';
-				test[2] = 'H';
-				test[3] = '\r';
-				break;
-			
-			case 26:
-				test[0] = 'S';
-				test[1] = 'P';
-				test[2] = 'H';
-				test[3] = '\r';
-				break;
-			
-			case 27:
-				test[0] = 'A';
-				test[1] = 'U';
-				test[2] = 'X';
-				test[3] = '\r';
-			
-			default:
-				
-				test[0] = 'D';
-				test[1] = '\r';
-			
-				break;
-				
+			if(separ_cmd(RX_ptr , ptr_PARAM_1)!=-1)
+			{
+				nb_cmd=0;
 			}
+			
+			if(separ_cmd(RX_ptr , ptr_PARAM_2)!=-1)
+			{
+				nb_cmd=1;
+			}
+			
+			if(separ_cmd(RX_ptr , ptr_PARAM_3)!=-1)
+			{
+				nb_cmd=2;
+			}
+			
+			if(separ_cmd(RX_ptr , ptr_PARAM_4)!=-1)
+			{
+				nb_cmd=3;
+			}
+			else nb_cmd=4;
+			
+
+			
+			
+			
+			RX_ptr = &RX_Buf[0]; // On re place le ptr au début. Pour être capable de relancer un cycle.
 		}
+	}
 	
 	
 //-----------------------------------------------------------------------------
@@ -722,10 +275,6 @@ void CM_HQ(void)
 // send_char et Send_string Sous-routines pour envoyer un char et string
 //-----------------------------------------------------------------------------
 
-	
-	
-	
-	
 void Send_char(char c)
 {
 	
@@ -782,30 +331,65 @@ char Recup_char(void)
 }
 
 
+//-----------------------------------------------------------------------------
+// Sous-routine d'analyse de la chaîne reçu
+//-----------------------------------------------------------------------------
 
+char separ_cmd(char* ptr_lecture, char* ptr_buffer){
+
+// La fonction returne -1 si il n'y a rien ( ou plus rien à lire) dans le buffer de lecture donné.
+
+	
+    //On passe les espaces.
+    while(*ptr_lecture == ' '){
+        ptr_lecture++;
+        RX_ptr++;
+    }
+
+    // cas chaine vide ou avec plus rien à lire
+    if(*ptr_lecture == '\r' || *ptr_lecture == '\0'){
+        return -1;
+    }
+
+    //On itère dans notre chaine de char
+    while(*ptr_lecture != '\r' && *ptr_lecture != '\0' && *ptr_lecture != ' '){
+        //Copie du char dans le buffer
+        *ptr_buffer = *ptr_lecture;
+        *(ptr_buffer+1) = '\0';
+        ptr_lecture++;
+        RX_ptr++;
+        ptr_buffer++;
+    }
+		return 0;
+  }
+
+	
+//-----------------------------------------------------------------------------
+// Sous routine de Reset_buff_ptr
+//-----------------------------------------------------------------------------
+
+void Reset_buff_ptr(){
+	
+// On initialise nos buffers à vide pour être certain de connaitre leur contenu 
+			RX_ptr = &RX_Buf[0]; // On re place le ptr au début.
+			
+			strcpy(CMD, "");
+			ptr_CMD = &CMD[0];
+			
+			strcpy(PARAM_1, "");
+			ptr_PARAM_1 = &PARAM_1[0];
+			
+			strcpy(PARAM_2, "");
+			ptr_PARAM_2 = &PARAM_2[0];
+			
+			strcpy(PARAM_3, "");
+			ptr_PARAM_3 = &PARAM_3[0];
+			
+			strcpy(PARAM_4, "");
+			ptr_PARAM_4 = &PARAM_4[0];
+
+  }
+	
 //-----------------------------------------------------------------------------
 // Interrupt Handlers
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-// UART0_ISR
-//-----------------------------------------------------------------------------
-//
-// Interrupt Service Routine for UART0:
-// Transmit function is implemented as a NULL-terminated string transmitter
-// that uses the global variable <TX_ptr> and the global semaphore <TX_Ready>.
-// Example usage:
-//while (TX_Ready == 0);
-// wait for transmitter to be available
-//    TX_Ready = 0; 
-// claim transmitter
-//    TX_ptr = <pointer to string to transmit>;
-//    TI0 = 1;
-// initiate transmit
-//
-// Receive function is implemented as a CR-terminated string receiver
-// that uses the global buffer <RX_Buf> and global indicator <RX_Ready>.
-// Once the message is received, <RX_Ready> is set to ‘1’.  Characters
-// received while <RX_Ready> is ‘1’ are ignored.
-//
-
-//ON NE PASSE PLUS PAR UNE INTERRUPT

@@ -75,6 +75,7 @@ void Send_string(char*);
 char Recup_char(void);
 
 char separ_cmd(char*, char*);
+void analyse_cmd(void);
 
 void Reset_buff_ptr(void);
 
@@ -114,6 +115,8 @@ char* ptr_PARAM_4 = &PARAM_4[0];
 char test[5];
 
 int nb_cmd;
+int s_cmd;
+int commande_valide;
 
 char *p_test;
 //-----------------------------------------------------------------------------
@@ -259,6 +262,189 @@ void HQ_CM(void)
 
 			
 			
+			analyse_cmd();
+			
+			
+			switch(s_cmd)
+			{     // Int or Enum type !
+			
+				
+			case 0: 
+				test[0] = 'N';
+				test[1] = '\r';
+				break;
+			
+			
+			case 1:
+				test[0] = 'D';
+				test[1] = '\r';
+				break;
+			
+			case 2:
+				test[0] = 'E';
+				test[1] = '\r';
+				break;
+			
+			case 3:
+				test[0] = 'Q';
+				test[1] = '\r';
+				break;
+			
+			case 4:
+				test[0] = 'T';
+				test[1] = 'V';
+				test[2] = '\r';
+				break;
+			
+			case 5:
+				test[0] = 'A';
+				test[1] = '\r';
+				break;
+			
+			case 6:
+				test[0] = 'B';
+				test[1] = '\r';
+				break;
+			
+			case 7:
+				test[0] = 'S';
+				test[1] = '\r';
+				break;
+			
+			case 8:
+				test[0] = 'R';
+				test[1] = 'D';
+				test[2] = '\r';
+				break;
+			
+			case 9:
+				test[0] = 'R';
+				test[1] = 'G';
+				test[2] = '\r';
+				break;
+			
+			case 10:
+				test[0] = 'R';
+				test[1] = 'C';
+				test[2] = '\r';
+				break;
+			
+			case 11:
+				test[0] = 'R';
+				test[1] = 'A';
+				test[2] = '\r';
+				break;
+			
+			case 12:
+				test[0] = 'G';
+				test[1] = '\r';
+				break;
+			
+			case 13:
+				test[0] = 'A';
+				test[1] = 'S';
+				test[2] = 'S';
+				test[3] = '\r';
+				break;
+			
+			case 14:
+				test[0] = 'M';
+				test[1] = 'I';
+				test[2] = '\r';
+				break;
+			
+			case 15:
+				test[0] = 'M';
+				test[1] = 'E';
+				test[2] = '\r';
+				break;
+			
+			case 16:
+				test[0] = 'I';
+				test[1] = 'P';
+				test[2] = 'O';
+				test[3] = '\r';
+				break;
+			
+			case 17:
+				test[0] = 'P';
+				test[1] = 'O';
+				test[2] = 'S';
+				test[3] = '\r';
+				break;
+			
+			case 18:
+				test[0] = 'M';
+				test[1] = 'O';
+				test[2] = 'U';
+				test[3] = '\r';
+				break;
+			
+			case 19:
+				test[0] = 'M';
+				test[1] = 'O';
+				test[2] = 'B';
+				test[3] = '\r';
+				break;
+			
+			case 20:
+				test[0] = 'M';
+				test[1] = 'O';
+				test[2] = 'S';
+				test[3] = '\r';
+				break;
+			
+			case 21:
+				test[0] = 'S';
+				test[1] = 'D';
+				test[2] = '\r';
+				break;
+			
+			case 22:
+				test[0] = 'L';
+				test[1] = '\r';
+				break;
+			
+			case 23:
+				test[0] = 'L';
+				test[1] = 'S';
+				test[2] = '\r';
+				break;
+			
+			case 24:
+				test[0] = 'C';
+				test[1] = 'S';
+				test[2] = '\r';
+				break;
+			
+			case 25:
+				test[0] = 'P';
+				test[1] = 'P';
+				test[2] = 'H';
+				test[3] = '\r';
+				break;
+			
+			case 26:
+				test[0] = 'S';
+				test[1] = 'P';
+				test[2] = 'H';
+				test[3] = '\r';
+				break;
+			
+			case 27:
+				test[0] = 'A';
+				test[1] = 'U';
+				test[2] = 'X';
+				test[3] = '\r';
+			
+			default:
+				
+				test[0] = 'D';
+				test[1] = '\r';
+			
+				break;
+				
+			}
 			
 			RX_ptr = &RX_Buf[0]; // On re place le ptr au début. Pour être capable de relancer un cycle.
 		}
@@ -390,6 +576,140 @@ void Reset_buff_ptr(){
 
   }
 	
+//-----------------------------------------------------------------------------
+// analyse_cmd Sous-routine d'analyse de commande
+//-----------------------------------------------------------------------------
+void analyse_cmd(void)
+	{
+		if(strcmp(CMD, "D") == 0)
+			{
+			s_cmd = 1;
+			}
+	else if(strcmp(CMD, "E") == 0)
+		{
+			s_cmd = 2;
+		}
+	else if(strcmp(CMD, "Q") == 0)
+	{
+		s_cmd = 3;
+	}
+	else if(strcmp(CMD, "TV") == 0)
+		{
+		s_cmd = 4;
+		}
+	else if(strcmp(CMD, "A") == 0)
+		{
+		s_cmd = 5;
+		}
+	else if(strcmp(CMD, "B") == 0)
+		{
+		s_cmd = 6;
+		}
+	else if(strcmp(CMD, "S") == 0)
+		{
+		s_cmd = 7;
+		}
+	else if(strcmp(CMD, "RD") == 0)
+		{
+		s_cmd = 8;
+		}
+	else if(strcmp(CMD, "RG") == 0)
+		{
+		s_cmd = 9;
+		}	
+	else if(strcmp(CMD, "RC") == 0)
+		{
+		s_cmd = 10;
+		}
+	else if(strcmp(CMD, "RA") == 0)
+		{
+		s_cmd = 11;
+	}
+	else if(strcmp(CMD, "G") == 0)
+		{
+		s_cmd = 12;
+	}
+	else if(strcmp(CMD, "ASS") == 0)
+		{
+		s_cmd = 13;
+	}
+	else if(strcmp(CMD, "MI") == 0)
+		{
+		s_cmd = 14;
+	}
+	else if(strcmp(CMD, "ME") == 0)
+		{
+		s_cmd = 15;
+	}
+	else if(strcmp(CMD, "IPO") == 0)
+		{
+		s_cmd = 16;
+	}
+	else if(strcmp(CMD, "POS") == 0)
+		{
+		s_cmd = 17;
+	}
+	else if(strcmp(CMD, "MOU") == 0)
+		{
+		s_cmd = 18;
+	}
+	else if(strcmp(CMD, "MOB") == 0)
+		{
+		s_cmd = 19;
+	}
+	else if(strcmp(CMD, "MOS") == 0)
+		{
+		s_cmd = 20;
+	}
+	else if(strcmp(CMD, "SD") == 0)
+		{
+		s_cmd = 21;
+	}
+	else if(strcmp(CMD, "L") == 0)
+		{
+		s_cmd = 22;
+	}
+	else if(strcmp(CMD, "LS") == 0)
+		{
+		s_cmd = 23;
+	}
+	else if(strcmp(CMD, "CS") == 0)
+		{
+		s_cmd = 24;
+	}
+		else if(strcmp(CMD, "PPH") == 0)
+		{
+		s_cmd = 25;
+	}
+		else if(strcmp(CMD, "SPH") == 0)
+		{
+		s_cmd = 26;
+	}
+		else if(strcmp(CMD, "AUX") == 0)
+		{
+		s_cmd = 27;
+	}
+
+	// Cas commande inconnue
+	else {commande_valide = 0;}
+	
+	//Affichage retour selon si la commande est connue ou non
+	switch(commande_valide){
+		case 0:
+			//Si pas valide : accusé non reception :  CR + LF + #
+			Send_char(0x0D);
+			Send_char(0x0A);
+			Send_char(0x23);
+			break;
+		
+		//valide
+		default: // Si valide : accusé reception :  CR + LF + >
+			Send_char(0x0D);
+			Send_char(0x0A);
+			Send_char(0x3E);
+			break;
+	}
+}
 //-----------------------------------------------------------------------------
 // Interrupt Handlers
 //-----------------------------------------------------------------------------

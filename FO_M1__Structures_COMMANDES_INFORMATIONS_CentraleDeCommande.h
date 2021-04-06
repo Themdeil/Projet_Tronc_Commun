@@ -38,7 +38,8 @@ typedef struct COMMANDES       // Cette structure contient toutes les commandes 
                                    // Paramètres des commandes précédentes:     
    BYTE  Vitesse;                  // Paramètre vitesse - Peut aussi être modifié par la commande "TV"
    BYTE  Coord_X;	                 // Paramètre coordonnée X
-   BYTE  Coord_Y;                  // Paramètre coordonnée Y
+   BYTE  Coord_Y;	// Paramètre coordonnée Y
+   int  V_defaut; //vitesse par defaut.
    int   Angle;                    // Paramètre angle
    
    enum  ACQ_Son Etat_ACQ_Son;     // Contient la commande d'acquisition de signaux sonores "ASS"

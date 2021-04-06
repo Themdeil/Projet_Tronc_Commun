@@ -15,10 +15,12 @@
 // Includes
 //-----------------------------------------------------------------------------
 #include <c8051f020.h> // SFR declarations
+
 #include <stdio.h>
 #include <string.h>
-#include <FO_M1__Structures_COMMANDES_INFORMATIONS_CentraleDeCommande.h>
+#include <stdlib.h>
 
+#include <FO_M1__Structures_COMMANDES_INFORMATIONS_CentraleDeCommande.h>
 //-----------------------------------------------------------------------------
 // 16-bit SFR Definitions for ‘F02x
 //-----------------------------------------------------------------------------
@@ -57,7 +59,8 @@ sfr16 DAC1     = 0xd5;
 
 sbit LED = P1^6; // LED = 1 means ON
 
-struct COMMANDES commandes; //On declare une structure
+struct COMMANDES commandes; //On declare une structure commande
+struct INFORMATIONS informations; //On declare une structure information
 //-----------------------------------------------------------------------------
 // Function PROTOTYPES
 //-----------------------------------------------------------------------------
@@ -76,9 +79,10 @@ char Recup_char(void);
 
 char separ_cmd(char*, char*);
 void analyse_cmd(void);
+void decoup_clef_val(char*, char*, char*);
 
 void Reset_buff_ptr(void);
-
+void Struct_init(void);
 
 //-----------------------------------------------------------------------------
 // Global VARIABLES
@@ -118,7 +122,7 @@ int nb_cmd;
 int s_cmd;
 int commande_valide;
 
-char *p_test;
+
 //-----------------------------------------------------------------------------
 // MAIN Routine
 //-----------------------------------------------------------------------------
@@ -131,23 +135,16 @@ void main (void) {
 	PORT_Init (); // initialize crossbar and GPIO   
 	UART0_Init (); // initialize UART0   
 	
-	Send_string("Tapez une cmd ");
+	Struct_init(); //Init des valeurs de la struct
 	
+	Send_string("Tapez une cmd ");
+
 	while (1){
       if(RI0 == 1)
 				{
 					HQ_CM();
 				}
-      TX_Ready = 0; // claim transmitter
-      TX_ptr = test; // set TX buffer pointer to point to
-			// received message
-			TI0 = 1; // start transmit
-      while (!TX_Ready); // wait for transmission to complete
-      TX_Ready = 0;
-      TX_ptr = "\r\n>"; // send CR+LF+>
-			TI0 = 1; // start transmit  
-			while (!TX_Ready) ; // wait for transmission to complete
-      RX_Ready = 0; // free the receiver   
+			CM_HQ();	
 		}
 }
 
@@ -178,12 +175,9 @@ void SYSCLK_Init (void){
 	// detector
 	}
 //-----------------------------------------------------------------------------
-// PORT_Init
+// PORT_Init Configure the Crossbar and GPIO ports
 //-----------------------------------------------------------------------------
-//
-// Configure the Crossbar and GPIO ports
-//
-	void PORT_Init (void){
+void PORT_Init (void){
 		XBR0    |= 0x04;
 		// Enable UART0
 		XBR2    |= 0x40;
@@ -193,13 +187,10 @@ void SYSCLK_Init (void){
 		P1MDOUT |= 0x40;
 		// enable LED as push-pull output
 		}
-	//-----------------------------------------------------------------------------
-	// UART0_Init
-	//-----------------------------------------------------------------------------
-		//
-		// Configure the UART0 using Timer1, for <baudrate> and 8-N-1.
-		//
-		void UART0_Init (void){
+//-----------------------------------------------------------------------------
+// UART0_Init  Configure the UART0 using Timer1, for <baudrate> and 8-N-1.
+//-----------------------------------------------------------------------------
+void UART0_Init (void){
 			SCON0  = 0x50; // SCON0: mode 1, 8-bit UART, enable RX
 			TMOD   = 0x20; // TMOD: timer 1, mode 2, 8-bit reload 
 			TH1    = -(SYSCLK/BAUDRATE/16); // set Timer1 reload value for baudrate
@@ -270,66 +261,141 @@ void HQ_CM(void)
 			
 				
 			case 0: 
-				test[0] = 'N';
-				test[1] = '\r';
+				Send_string("Cas 0");
 				break;
 			
 			
 			case 1:
-				test[0] = 'D';
-				test[1] = '\r';
+				Send_string("D");
+				if(nb_cmd == 0)
+					{
+						commandes.Etat_Epreuve = 1;
+					}
+				else //Un argument : le n° de l'epreuve
+					{
+						if(0<atoi(PARAM_1) && 9>atoi(PARAM_1))
+							{
+								commandes.Etat_Epreuve = atoi(PARAM_1);	
+							}
+		//Sinon commande invalide
+				else
+						{
+							commande_valide = 0;
+						}
+					}
 				break;
 			
 			case 2:
-				test[0] = 'E';
-				test[1] = '\r';
+				Send_string("E");
+			commandes.Etat_Epreuve = 9;
 				break;
 			
 			case 3:
-				test[0] = 'Q';
-				test[1] = '\r';
+				Send_string("Q");
+			commandes.Etat_Epreuve = 10;
 				break;
 			
 			case 4:
-				test[0] = 'T';
-				test[1] = 'V';
-				test[2] = '\r';
+				Send_string("TV");
+				if(nb_cmd == 1)
+					{
+						if(5>atoi(PARAM_1) && 101>atoi(PARAM_1))
+							{
+								commandes.V_defaut = atoi(PARAM_1);
+							}
+					}
+				else
+						{
+							commande_valide = 0;
+						}
 				break;
 			
 			case 5:
-				test[0] = 'A';
-				test[1] = '\r';
+				Send_string("A");
+				if(nb_cmd == 0)
+		{
+			commandes.Vitesse = commandes.V_defaut;
+			commandes.Etat_Mouvement = Avancer;
+		}
+		else
+		{
+			if(5>atoi(PARAM_1) && 101>atoi(PARAM_1))
+			{
+				commandes.Vitesse = atoi(PARAM_1);
+				commandes.Etat_Mouvement = Avancer;
+			}
+			else
+			{
+				commande_valide = 0;
+			}
+		}
 				break;
 			
 			case 6:
-				test[0] = 'B';
-				test[1] = '\r';
+				Send_string("B");
+				if(nb_cmd == 0)
+		{
+			commandes.Vitesse = commandes.V_defaut;
+			commandes.Etat_Mouvement = Reculer;
+		}
+		else
+		{
+			if(5>atoi(PARAM_1) && 101>atoi(PARAM_1))
+			{
+				commandes.Vitesse = atoi(PARAM_1);
+				commandes.Etat_Mouvement = Reculer;
+			}
+			else
+			{
+				commande_valide = 0;
+			}
+		}
 				break;
 			
 			case 7:
-				test[0] = 'S';
-				test[1] = '\r';
+				Send_string("S");
+				commandes.Etat_Mouvement = Stopper;
 				break;
 			
 			case 8:
-				test[0] = 'R';
-				test[1] = 'D';
-				test[2] = '\r';
+				Send_string("RD");
+				commandes.Etat_Mouvement = Rot_90D;
 				break;
 			
 			case 9:
-				test[0] = 'R';
-				test[1] = 'G';
-				test[2] = '\r';
+				Send_string("RG");
+				commandes.Etat_Mouvement = Rot_90G;
+				
 				break;
 			
 			case 10:
-				test[0] = 'R';
-				test[1] = 'C';
-				test[2] = '\r';
+				Send_string("RC");
+				if(nb_cmd == 0)
+					{
+						commande_valide = 0;
+					}
+	
+					else
+						{
+							if(strcmp(PARAM_1, "D") == 0)
+								{
+									commandes.Etat_Mouvement = Rot_180D;
+
+								}
+							else if(strcmp(PARAM_1, "G") == 0)
+									{
+										commandes.Etat_Mouvement = Rot_180G;
+									}
+							else{
+										commande_valide = 0;
+									}
+						}
+		
 				break;
 			
 			case 11:
+				Send_string("RA");
+			
 				test[0] = 'R';
 				test[1] = 'A';
 				test[2] = '\r';
@@ -341,22 +407,31 @@ void HQ_CM(void)
 				break;
 			
 			case 13:
-				test[0] = 'A';
-				test[1] = 'S';
-				test[2] = 'S';
-				test[3] = '\r';
+				Send_string("ASS");
+				if(nb_cmd == 0)
+					{
+						commande_valide = 0;
+					}
+	
+				if(atoi(PARAM_1) > 0 && atoi(PARAM_1) < 99)
+					{
+						commandes.ACQ_Duree = atoi(PARAM_1);
+						commandes.Etat_ACQ_Son = ACQ_oui;
+					}
+				else
+					{
+						commande_valide = 0;
+					}
 				break;
 			
-			case 14:
-				test[0] = 'M';
-				test[1] = 'I';
-				test[2] = '\r';
+			case 14: // Mesure conso courant pas encore implémenté
+				Send_string("MI");
+				commandes.Etat_Energie = Mesure_I;
 				break;
 			
-			case 15:
-				test[0] = 'M';
-				test[1] = 'E';
-				test[2] = '\r';
+			case 15: // Mesure conso energie pas encore implémenté
+				Send_string("ME");
+				commandes.Etat_Energie = Mesure_E;
 				break;
 			
 			case 16:
@@ -367,10 +442,8 @@ void HQ_CM(void)
 				break;
 			
 			case 17:
-				test[0] = 'P';
-				test[1] = 'O';
-				test[2] = 'S';
-				test[3] = '\r';
+				Send_string("POS");
+				commandes.Etat_Position = Demande_Position;
 				break;
 			
 			case 18:
@@ -406,9 +479,8 @@ void HQ_CM(void)
 				break;
 			
 			case 23:
-				test[0] = 'L';
-				test[1] = 'S';
-				test[2] = '\r';
+				Send_string("LS");
+				commandes.Etat_Lumiere = Eteindre;
 				break;
 			
 			case 24:
@@ -425,10 +497,8 @@ void HQ_CM(void)
 				break;
 			
 			case 26:
-				test[0] = 'S';
-				test[1] = 'P';
-				test[2] = 'H';
-				test[3] = '\r';
+				Send_string("SPH");
+				commandes.Etat_Photo = Photo_stop;
 				break;
 			
 			case 27:
@@ -456,11 +526,44 @@ void HQ_CM(void)
 //-----------------------------------------------------------------------------
 void CM_HQ(void)
 	{
+		if(informations.Etat_Invite == Invite_oui){
+        Send_string(informations.MSG_Invit);
+    }
+    //
+    if(informations.Etat_BUT_Mouvement == BUT_Atteint_oui){
+        Send_string("Coordonnees atteintes");
+    }
+    //
+    if(informations.Etat_BUT_Servo == BUT_Servo_H){
+        Send_string("Servo H en place");
+    }
+    else if(informations.Etat_BUT_Servo == BUT_Servo_V){
+        Send_string("Servo V en place");
+    }
+    //
+    if(informations.Etat_DCT_Obst == BUT_Atteint_oui){
+        Send_string("Coordonnees atteintes");
+    }
+    //
+    if(informations.Etat_RESULT_Courant == BUT_Atteint_oui){
+        Send_string("Coordonnees atteintes");
+    }
+    //
+    if(informations.Etat_RESULT_Energie == BUT_Atteint_oui){
+        Send_string("Coordonnees atteintes");
+    }
+    //
+    if(informations.Etat_RESULT_Position == BUT_Atteint_oui){
+        Send_string("Coordonnees atteintes");
+    }
+    //
+    if(informations.Etat_Aux == Aux_oui){
+        Send_string(informations.MSG_Aux);
+    }
 	}
 //-----------------------------------------------------------------------------
 // send_char et Send_string Sous-routines pour envoyer un char et string
 //-----------------------------------------------------------------------------
-
 void Send_char(char c)
 {
 	
@@ -518,9 +621,37 @@ char Recup_char(void)
 
 
 //-----------------------------------------------------------------------------
+// Sous-routine  decoup_clef_val de découpage clef valeur des param complexes.
+//-----------------------------------------------------------------------------
+void decoup_clef_val(char* param, char* buf_clef, char* buf_val)
+{
+	if(*param == '\0'){
+        *buf_clef = '\0';
+        *buf_val = '\0';
+    }
+    else{
+        //On prend tous les caracteres jusqu'au ':' exclus dans clef
+        while(*param != ':')
+        {
+                *buf_clef = *param;
+                buf_clef++;
+        param++;
+        }
+        //Ici on passe les ':'
+        param++;
+    
+        //Puis on lit tout ce qui suit les ':' jusqu'a la fin de la chaine
+        while(*param != '\0')
+        {
+            *buf_val = *param;
+            buf_val++;
+            param++;
+        }
+    }
+}
+//-----------------------------------------------------------------------------
 // Sous-routine d'analyse de la chaîne reçu
 //-----------------------------------------------------------------------------
-
 char separ_cmd(char* ptr_lecture, char* ptr_buffer){
 
 // La fonction returne -1 si il n'y a rien ( ou plus rien à lire) dans le buffer de lecture donné.
@@ -549,32 +680,6 @@ char separ_cmd(char* ptr_lecture, char* ptr_buffer){
 		return 0;
   }
 
-	
-//-----------------------------------------------------------------------------
-// Sous routine de Reset_buff_ptr
-//-----------------------------------------------------------------------------
-
-void Reset_buff_ptr(){
-	
-// On initialise nos buffers à vide pour être certain de connaitre leur contenu 
-			RX_ptr = &RX_Buf[0]; // On re place le ptr au début.
-			
-			strcpy(CMD, "");
-			ptr_CMD = &CMD[0];
-			
-			strcpy(PARAM_1, "");
-			ptr_PARAM_1 = &PARAM_1[0];
-			
-			strcpy(PARAM_2, "");
-			ptr_PARAM_2 = &PARAM_2[0];
-			
-			strcpy(PARAM_3, "");
-			ptr_PARAM_3 = &PARAM_3[0];
-			
-			strcpy(PARAM_4, "");
-			ptr_PARAM_4 = &PARAM_4[0];
-
-  }
 	
 //-----------------------------------------------------------------------------
 // analyse_cmd Sous-routine d'analyse de commande
@@ -709,6 +814,55 @@ void analyse_cmd(void)
 			Send_char(0x3E);
 			break;
 	}
+}
+	
+
+
+
+//-----------------------------------------------------------------------------
+// Sous routine de Reset_buff_ptr
+//-----------------------------------------------------------------------------
+void Reset_buff_ptr(){
+	
+// On initialise nos buffers à vide pour être certain de connaitre leur contenu 
+			RX_ptr = &RX_Buf[0]; // On re place le ptr au début.
+			
+			strcpy(CMD, "");
+			ptr_CMD = &CMD[0];
+			
+			strcpy(PARAM_1, "");
+			ptr_PARAM_1 = &PARAM_1[0];
+			
+			strcpy(PARAM_2, "");
+			ptr_PARAM_2 = &PARAM_2[0];
+			
+			strcpy(PARAM_3, "");
+			ptr_PARAM_3 = &PARAM_3[0];
+			
+			strcpy(PARAM_4, "");
+			ptr_PARAM_4 = &PARAM_4[0];
+
+  }
+	
+//-----------------------------------------------------------------------------
+// Struct_init Sous-routine d'analyse de commande
+//-----------------------------------------------------------------------------
+void Struct_init(void)
+{
+	commandes.Etat_Epreuve = Epreuve_non;
+	commandes.Etat_Mouvement = Mouvement_non;
+	
+	commandes.Etat_ACQ_Son = ACQ_non;
+	commandes.Etat_DCT_Obst = DCT_non;
+	commandes.Etat_Lumiere = Lumiere_non;
+	commandes.Etat_Servo = Servo_non;
+	commandes.Etat_Energie = Energie_non;
+	commandes.Etat_Position = Position_non;
+	commandes.Etat_Photo = Photo_non;
+	
+	commandes.V_defaut = 20;
+	
+	
 }
 //-----------------------------------------------------------------------------
 // Interrupt Handlers

@@ -315,10 +315,10 @@ void HQ_CM(void)
 			case 5:
 				Send_string("A");
 				if(nb_cmd == 0)
-		{
-			commandes.Vitesse = commandes.V_defaut;
-			commandes.Etat_Mouvement = Avancer;
-		}
+					{
+						commandes.Vitesse = commandes.V_defaut;
+						commandes.Etat_Mouvement = Avancer;
+					}
 		else
 		{
 			if(5>atoi(PARAM_1) && 101>atoi(PARAM_1))
@@ -545,10 +545,91 @@ void HQ_CM(void)
 				break;
 			
 			case 16:
-				test[0] = 'I';
-				test[1] = 'P';
-				test[2] = 'O';
-				test[3] = '\r';
+				Send_string("IPO");
+			
+				if(nb_cmd != 3)
+					{
+						commande_valide = 0;
+					}
+				else 
+					{
+						decoup_clef_val(PARAM_1, buf_clef, buf_val);
+						if((strcmp(buf_clef, "X") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))))
+							{
+								commandes.Etat_Position = Init_Position;
+								commandes.Pos_Coord_X = atoi(buf_val);
+							}
+
+        else if((strcmp(buf_clef, "Y") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))) && commande_valide != 0)
+				{
+					commandes.Pos_Coord_Y = atoi(buf_val);
+				}
+
+        else if((strcmp(buf_clef, "A") == 0) && ((-181 < atoi(buf_val)) && (181 > atoi(buf_val))) && commande_valide != 0)
+				{
+					commandes.Pos_Angle = atoi(buf_val);
+				}
+
+				else
+					{
+						commande_valide = 0;
+					}
+		
+		//Deuxieme argument si le premier est fait
+		decoup_clef_val(PARAM_2, buf_clef, buf_val);
+
+		if((strcmp(buf_clef, "Y") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))))
+			{
+				commandes.Pos_Coord_X = atoi(buf_val);
+			}
+
+        else if((strcmp(buf_clef, "X") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))) && commande_valide != 0)
+				{
+					commandes.Pos_Coord_Y = atoi(buf_val);
+				}
+
+        else if((strcmp(buf_clef, "A") == 0) && ((-181 < atoi(buf_val)) && (181 > atoi(buf_val))) && commande_valide != 0)
+				{
+					commandes.Pos_Angle = atoi(buf_val);
+				}
+
+		else
+			{
+				commande_valide = 0;
+			}
+		
+		//Troisieme argument
+		decoup_clef_val(PARAM_3, buf_clef, buf_val);
+
+		if((strcmp(buf_clef, "A") == 0) && ((-181 < atoi(buf_val)) && (181 > atoi(buf_val))) && commande_valide != 0)
+			{
+				commandes.Pos_Angle = atoi(buf_val);
+			}
+
+    else if((strcmp(buf_clef, "Y") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))))
+			{
+				commandes.Pos_Coord_X = atoi(buf_val);
+			}
+
+    else if((strcmp(buf_clef, "X") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))) && commande_valide != 0)
+		{
+			commandes.Pos_Coord_Y = atoi(buf_val);
+		}
+
+		else
+			{
+				commande_valide = 0;
+      }
+    }
+    
+    if(commande_valide == 0)
+			{
+        commandes.Etat_Mouvement = Mouvement_non;
+        commandes.Pos_Coord_X = 0;
+        commandes.Pos_Coord_Y = 0;
+        commandes.Pos_Angle = 0;
+			}
+			
 				break;
 			
 			case 17:
@@ -618,21 +699,16 @@ void HQ_CM(void)
 							commande_valide = 0;
 							break;
 					}
-			
-				test[0] = 'M';
-				test[1] = 'O';
-				test[2] = 'B';
-				test[3] = '\r';
 				break;
 			
-			case 20:
+			case 20: // FONCTION NON PROGRAMMEE POUR LE MOMENT  
 				test[0] = 'M';
 				test[1] = 'O';
 				test[2] = 'S';
 				test[3] = '\r';
 				break;
 			
-			case 21:
+			case 21: // FONCTION NON PROGRAMMEE POUR LE MOMENT
 				test[0] = 'S';
 				test[1] = 'D';
 				test[2] = '\r';
@@ -759,9 +835,76 @@ void HQ_CM(void)
 				break;
 			
 			case 24:
-				test[0] = 'C';
-				test[1] = 'S';
-				test[2] = '\r';
+				Send_string("CS");
+			
+				switch(nb_cmd)
+			{
+        case 0:
+            commandes.Etat_Servo = Servo_H;
+            commandes.Servo_Angle = 0;
+            break;
+        case 1:
+            
+                decoup_clef_val(PARAM_1, buf_clef, buf_val);
+                if(strcmp(buf_clef, "A") == 0 && -100 < atoi(buf_val) && 100 > atoi(buf_val))
+								{
+									commandes.Servo_Angle = atoi(buf_val);
+                }
+                else
+									{
+                    commande_valide = 0;
+									}
+            
+								if (strcmp(PARAM_1, "H") == 0)
+									{
+										commandes.Etat_Servo = Servo_H;
+									}
+            else if (strcmp(PARAM_1, "V") == 0)
+							{
+								commandes.Etat_Servo = Servo_V;
+							}
+            else
+							{
+								commande_valide = 0;
+							}
+            break;
+
+        case 2:
+            
+                decoup_clef_val(PARAM_2, buf_clef, buf_val);
+                if(strcmp(buf_clef, "A") == 0 && -100 < atoi(buf_val) && 100 > atoi(buf_val))
+									{
+										commandes.Servo_Angle = atoi(buf_val);
+									}
+                else
+									{
+                    commande_valide = 0;
+									}
+            
+            if (strcmp(PARAM_1, "H") == 0)
+							{
+								commandes.Etat_Servo = Servo_H;
+							}
+            else if (strcmp(PARAM_1, "V") == 0)
+							{
+								commandes.Etat_Servo = Servo_V;
+							}
+            else
+							{
+								commande_valide = 0;
+							}
+            break;
+
+            default:
+                commande_valide = 0;
+                break;
+    }
+
+    if(commande_valide == 0)
+			{
+        commandes.Etat_Servo = Servo_non;
+        commandes.Servo_Angle = 0;
+			}
 				break;
 			
 			case 25:
@@ -834,14 +977,13 @@ void HQ_CM(void)
 				test[3] = '\r';
 			
 			default:
-				
-				test[0] = 'D';
-				test[1] = '\r';
-			
+				Send_char(0x0D);
+				Send_char(0x0A);
+				Send_char(0x23);
 				break;
 				
 			}
-			
+			Reset_buff_ptr();
 			RX_ptr = &RX_Buf[0]; // On re place le ptr au début. Pour être capable de relancer un cycle.
 		}
 	}
@@ -1012,6 +1154,7 @@ char separ_cmd(char* ptr_lecture, char* ptr_buffer){
 //-----------------------------------------------------------------------------
 void analyse_cmd(void)
 	{
+		commande_valide = 1;
 		if(strcmp(CMD, "D") == 0)
 			{
 			s_cmd = 1;
@@ -1119,18 +1262,25 @@ void analyse_cmd(void)
 		else if(strcmp(CMD, "AUX") == 0)
 		{
 		s_cmd = 27;
-	}
-
+			
+		}
+		else 
+			{
+				s_cmd = 28;
+				commande_valide = 0;
+			}
 	// Cas commande inconnue
-	else {commande_valide = 0;}
+	//else {commande_valide = 0;}
 	
 	//Affichage retour selon si la commande est connue ou non
 	switch(commande_valide){
 		case 0:
+			
 			//Si pas valide : accusé non reception :  CR + LF + #
-			Send_char(0x0D);
-			Send_char(0x0A);
-			Send_char(0x23);
+		
+			//Send_char(0x0D);
+			//Send_char(0x0A);
+			//Send_char(0x23);
 			break;
 		
 		//valide

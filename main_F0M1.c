@@ -115,6 +115,8 @@ char* ptr_PARAM_4 = &PARAM_4[0];
 
 
 
+char buf_clef[15];
+char buf_val[15];
 
 char test[5];
 
@@ -396,14 +398,122 @@ void HQ_CM(void)
 			case 11:
 				Send_string("RA");
 			
-				test[0] = 'R';
-				test[1] = 'A';
-				test[2] = '\r';
+				if(nb_cmd == 0)
+					{
+						commandes.Etat_Mouvement = Rot_AngD;
+						commandes.Angle = 90;
+					}
+	
+	
+				else
+					{	
+						decoup_clef_val(PARAM_1, buf_clef, buf_val);
+			//Si droite et ecrit correctement
+						if(strcmp(buf_clef, "D") == 0 &&
+							atoi(buf_val) > 0 &&
+							atoi(buf_val) < 181)
+						{
+							commandes.Etat_Mouvement = Rot_AngD;
+							commandes.Angle = atoi(buf_val);
+			}
+			else if(strcmp(buf_clef, "G") == 0 && atoi(buf_val) > 0 && atoi(buf_val) < 181)
+				{
+					commandes.Etat_Mouvement = Rot_AngG;
+					commandes.Angle = atoi(buf_val);
+				}
+			else{
+				commande_valide = 0;
+			}
+		}
 				break;
 			
 			case 12:
-				test[0] = 'G';
-				test[1] = '\r';
+				Send_string("G");
+			
+				if(nb_cmd != 3)
+					{
+						commande_valide = 0;
+					}
+				else 
+					{
+					
+						decoup_clef_val(PARAM_1, buf_clef, buf_val);
+
+						if((strcmp(buf_clef, "X") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))))
+							{
+								commandes.Etat_Mouvement = Depl_Coord;
+								commandes.Coord_X = atoi(buf_val);
+							}
+
+						else if((strcmp(buf_clef, "Y") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))) && commande_valide != 0)
+							{
+								commandes.Coord_Y = atoi(buf_val);
+							}
+
+						else if((strcmp(buf_clef, "A") == 0) && ((-181 < atoi(buf_val)) && (181 > atoi(buf_val))) && commande_valide != 0)
+							{
+								commandes.Angle = atoi(buf_val);
+							}
+
+						else
+							{
+								commande_valide = 0;
+							}
+		
+	
+						decoup_clef_val(PARAM_2, buf_clef, buf_val);
+
+						if((strcmp(buf_clef, "Y") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))))
+							{
+								commandes.Coord_X = atoi(buf_val);
+							}
+
+						else if((strcmp(buf_clef, "X") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))) && commande_valide != 0)
+							{
+								commandes.Coord_Y = atoi(buf_val);
+							}
+
+						else if((strcmp(buf_clef, "A") == 0) && ((-181 < atoi(buf_val)) && (181 > atoi(buf_val))) && commande_valide != 0)
+							{
+								commandes.Angle = atoi(buf_val);
+							}
+
+						else
+							{
+								commande_valide = 0;
+							}
+		
+						
+						decoup_clef_val(PARAM_3, buf_clef, buf_val);
+
+						if((strcmp(buf_clef, "A") == 0) && ((-181 < atoi(buf_val)) && (181 > atoi(buf_val))) && commande_valide != 0)
+						{
+							commandes.Angle = atoi(buf_val);
+						}
+
+						else if((strcmp(buf_clef, "Y") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))))
+							{
+								commandes.Coord_X = atoi(buf_val);
+							}
+
+						else if((strcmp(buf_clef, "X") == 0) && ((-100 < atoi(buf_val)) && (100 > atoi(buf_val))) && commande_valide != 0)
+							{
+								commandes.Coord_Y = atoi(buf_val);
+							}
+
+						else
+							{
+								commande_valide = 0;
+							}
+		//Si un des arguments est invalide, on remet tout a 0
+						if(commande_valide == 0)
+							{
+								commandes.Etat_Mouvement = Mouvement_non;
+								commandes.Coord_X = 0;
+								commandes.Coord_Y = 0;
+								commandes.Angle = 0;
+							}
+					}
 				break;
 			
 			case 13:
@@ -454,6 +564,61 @@ void HQ_CM(void)
 				break;
 			
 			case 19:
+				Send_string("MOB");
+			
+				switch (nb_cmd)
+					{
+					
+						case 0:
+							commandes.Etat_DCT_Obst = oui_360;
+							commandes.DCT_Obst_Resolution = 30;
+							break;
+
+				
+						case 1:
+						
+							if(strcmp(PARAM_1, "D") == 0)
+								{
+									commandes.Etat_DCT_Obst = oui_180;
+								}
+ 
+							else
+								{
+									decoup_clef_val(PARAM_1, buf_clef, buf_val);
+									if(strcmp(buf_clef, "A") == 0 && atoi(buf_val) > 4 && atoi(buf_val) < 46)
+										{
+											commandes.DCT_Obst_Resolution = atoi(buf_val);
+										}
+								}
+							break;
+
+   
+						case 2:
+							if(strcmp(PARAM_1, "D") == 0)
+								{
+									commandes.Etat_DCT_Obst = oui_180;
+								}
+ 
+
+							
+									decoup_clef_val(PARAM_2, buf_clef, buf_val);
+									if(strcmp(buf_clef, "A") == 0 && atoi(buf_val) > 4 && atoi(buf_val) < 46)
+										{
+											commandes.DCT_Obst_Resolution = atoi(buf_val);
+										}
+												
+       
+									else
+										{
+											commande_valide = 0;
+										}
+							break;
+ 
+						default:
+							commande_valide = 0;
+							break;
+					}
+			
 				test[0] = 'M';
 				test[1] = 'O';
 				test[2] = 'B';
@@ -474,8 +639,118 @@ void HQ_CM(void)
 				break;
 			
 			case 22:
-				test[0] = 'L';
-				test[1] = '\r';
+				Send_string("L");
+			
+				commandes.Etat_Lumiere = Allumer;
+				commandes.Lumiere_Intensite = 100;
+				commandes.Lumiere_Duree = 99;
+				commandes.Lumire_Extinction = 0;
+				commandes.Lumiere_Nbre = 1;
+
+				if(nb_cmd != 0)
+					{
+						decoup_clef_val(PARAM_1, buf_clef, buf_val);
+						if(strcmp(buf_clef, "I") == 0 && 0 < atoi(buf_val) && 101 > atoi(buf_val))
+							{
+								commandes.Lumiere_Intensite = atoi(buf_val);
+							}
+						else if(strcmp(buf_clef, "D") == 0 && 0 < atoi(buf_val) && 100 > atoi(buf_val))
+						{
+                commandes.Lumiere_Duree = atoi(buf_val);
+						}
+						else if(strcmp(buf_clef, "E") == 0 && 0 <= atoi(buf_val) && 100 > atoi(buf_val))
+						{
+                commandes.Lumire_Extinction = atoi(buf_val);
+						}
+						else if (strcmp(buf_clef, "N") == 0 &&
+            0 < atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumiere_Nbre = atoi(buf_val);
+        }
+        else{
+            commande_valide = 0;
+        }
+
+        decoup_clef_val(PARAM_2, buf_clef, buf_val);
+        if(strcmp(buf_clef, "I") == 0 &&
+            0 < atoi(buf_val) &&
+            101 > atoi(buf_val)){
+                commandes.Lumiere_Intensite = atoi(buf_val);
+        }
+        else if(strcmp(buf_clef, "D") == 0 &&
+            0 < atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumiere_Duree = atoi(buf_val);
+        }
+        else if(strcmp(buf_clef, "E") == 0 &&
+            0 <= atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumire_Extinction = atoi(buf_val);
+        }
+        else if (strcmp(buf_clef, "N") == 0 &&
+            0 < atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumiere_Nbre = atoi(buf_val);
+        }
+        else{
+            commande_valide = 0;
+        }
+
+        decoup_clef_val(PARAM_3, buf_clef, buf_val);
+        if(strcmp(buf_clef, "I") == 0 &&
+            0 < atoi(buf_val) &&
+            101 > atoi(buf_val)){
+                commandes.Lumiere_Intensite = atoi(buf_val);
+        }
+        else if(strcmp(buf_clef, "D") == 0 &&
+            0 < atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumiere_Duree = atoi(buf_val);
+        }
+        else if(strcmp(buf_clef, "E") == 0 &&
+            0 <= atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumire_Extinction = atoi(buf_val);
+        }
+        else if (strcmp(buf_clef, "N") == 0 &&
+            0 < atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumiere_Nbre = atoi(buf_val);
+        }
+        else{
+            commande_valide = 0;
+        }
+
+        decoup_clef_val(PARAM_4, buf_clef, buf_val);
+        if(strcmp(buf_clef, "I") == 0 &&
+            0 < atoi(buf_val) &&
+            101 > atoi(buf_val)){
+                commandes.Lumiere_Intensite = atoi(buf_val);
+        }
+        else if(strcmp(buf_clef, "D") == 0 &&
+            0 < atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumiere_Duree = atoi(buf_val);
+        }
+        else if(strcmp(buf_clef, "E") == 0 &&
+            0 <= atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumire_Extinction = atoi(buf_val);
+        }
+        else if (strcmp(buf_clef, "N") == 0 &&
+            0 < atoi(buf_val) &&
+            100 > atoi(buf_val)){
+                commandes.Lumiere_Nbre = atoi(buf_val);
+        }
+        else{
+            commande_valide = 0;
+        }
+    }
+
+    if(commande_valide == 0){
+        commandes.Etat_Lumiere = Lumiere_non;
+    }
+				
 				break;
 			
 			case 23:
@@ -490,10 +765,61 @@ void HQ_CM(void)
 				break;
 			
 			case 25:
-				test[0] = 'P';
-				test[1] = 'P';
-				test[2] = 'H';
-				test[3] = '\r';
+				Send_string("PPH");
+			
+				commandes.Etat_Photo = Photo_non;
+				commandes.Photo_Duree = 1;
+				commandes.Photo_Nbre = 1;
+
+					if(strcmp(PARAM_1, "O") == 0)
+						{
+							commandes.Etat_Photo = Photo_1;
+						}
+
+					else if(strcmp(PARAM_1, "C") == 0)
+						{
+							commandes.Etat_Photo = Photo_continue;
+						}
+
+					else if(strcmp(PARAM_1, "S") == 0)
+						{
+							commandes.Etat_Photo = Photo_Multiple;
+						}
+
+					else
+						{
+							commande_valide = 0;
+						}
+					decoup_clef_val(PARAM_2, buf_clef, buf_val);
+					if(strcmp(buf_clef, "E") == 0 && 0 <= atoi(buf_val) && 100 > atoi(buf_val))
+								{
+									commandes.Photo_Duree = atoi(buf_val);
+								}
+					else
+						{
+							commande_valide = 0;
+						}
+
+			
+					decoup_clef_val(PARAM_3, buf_clef, buf_val);
+					if(strcmp(buf_clef, "N") == 0 && 0 < atoi(buf_val) && 256 > atoi(buf_val))
+					{
+                commandes.Photo_Nbre = atoi(buf_val);
+					}
+					else
+						{
+							commande_valide = 0;
+						}
+				
+	
+
+    if(commande_valide == 0)
+			{
+        commandes.Etat_Photo = Photo_non;
+        commandes.Photo_Duree = 1;
+        commandes.Photo_Nbre = 1;
+			}
+				
 				break;
 			
 			case 26:

@@ -18,7 +18,7 @@ typedef char SIGNED_BYTE;
 //*****************************************************************************************************************************************
 
 enum Epreuve {Epreuve_non, epreuve1, epreuve2, epreuve3, epreuve4, epreuve5, epreuve6, epreuve7, epreuve8, Fin_Epreuve, Stop_Urgence};
-enum Mouvement {Mouvement_non, Avancer, Reculer, Stopper, Rot_90D, Rot_90G, Rot_180D, Rot_180G, Rot_AngD, RotAngG, Depl_Coord}; 
+enum Mouvement {Mouvement_non, Avancer, Reculer, Stopper, Rot_90D, Rot_90G, Rot_180D, Rot_180G, Rot_AngD, Rot_AngG, Depl_Coord}; 
 enum ACQ_Son {ACQ_non, ACQ_oui};
 enum DCT_Obst {DCT_non, oui_180, oui_360};
 enum Lumiere {Lumiere_non, Allumer, Eteindre};

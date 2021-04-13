@@ -182,12 +182,11 @@ void SYSCLK_Init (void){
 void PORT_Init (void){
 		XBR0    |= 0x04;
 		// Enable UART0
-		XBR2    |= 0x40;
+		XBR2    |= 0x64;
 		// Enable crossbar and weak pull-ups  
 		P0MDOUT |= 0x01;
 		// enable TX0 as a push-pull output  
-		P1MDOUT |= 0x40;
-		// enable LED as push-pull output
+		
 		}
 //-----------------------------------------------------------------------------
 // UART0_Init  Configure the UART0 using Timer1, for <baudrate> and 8-N-1.

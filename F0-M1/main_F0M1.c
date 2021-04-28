@@ -198,10 +198,10 @@ void UART0_Init (void){
 			TR1    = 1; // start Timer1
 			CKCON |= 0x10; // Timer1 uses SYSCLK as time base
 			PCON  |= 0x80; // SMOD00 = 1
-			ES0    = 1; // enable UART0 interrupts
-			TX_Ready = 1; // indicate TX ready for transmit 
-			RX_Ready = 0; // indicate RX string not ready
-			TX_ptr = NULL;
+			//ES0    = 1; // enable UART0 interrupts
+			//TX_Ready = 1; // indicate TX ready for transmit 
+			//RX_Ready = 0; // indicate RX string not ready
+			//TX_ptr = NULL;
 }
 		
 
@@ -317,6 +317,7 @@ void HQ_CM(void)
 					{
 						commandes.Vitesse = commandes.V_defaut;
 						commandes.Etat_Mouvement = Avancer;
+						
 					}
 		else
 		{
@@ -1016,6 +1017,7 @@ void CM_HQ(void)
         Send_string("Coordonnees atteintes");
     }
     //
+
     if(informations.Etat_RESULT_Energie == BUT_Atteint_oui){
         Send_string("Coordonnees atteintes");
     }

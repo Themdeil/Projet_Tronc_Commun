@@ -382,9 +382,9 @@
               <FilePath>.\STARTUP.A51</FilePath>
             </File>
             <File>
-              <FileName>main_F0S2.c</FileName>
+              <FileName>main_FFS2.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\main_F0S2.c</FilePath>
+              <FilePath>.\main_FFS2.c</FilePath>
             </File>
           </Files>
         </Group>

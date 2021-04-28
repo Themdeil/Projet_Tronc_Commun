@@ -199,8 +199,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\main_F0S2.c</PathWithFileName>
-      <FilenameWithoutPath>main_F0S2.c</FilenameWithoutPath>
+      <PathWithFileName>.\main_FFS2.c</PathWithFileName>
+      <FilenameWithoutPath>main_FFS2.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

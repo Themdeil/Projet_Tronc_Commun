@@ -1,0 +1,4 @@
+".\Objects\main_FFS2.obj",
+".\Objects\STARTUP.obj" 
+TO ".\Objects\Projet TC F0S2" 
+PRINT(".\Listings\Projet TC F0S2.m51") RAMSIZE(256) 

@@ -1,0 +1,182 @@
+C51 COMPILER V9.59.0.0   MAIN_FFS2                                                         04/29/2021 07:49:54 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN_FFS2
+OBJECT MODULE PLACED IN .\Objects\main_FFS2.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main_FFS2.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\main_FFS2.lst) TABS(2) OBJECT(.\Objects\main_FFS2.obj)
+
+line level    source
+
+   1          //-----------------------------------------------------------------------------
+   2          // main_FFS2.c
+   3          //-----------------------------------------------------------------------------
+   4          //// AUTH: Hadrien Barret// DATE: 28/04/21
+   5          
+   6          //-----------------------------------------------------------------------------
+   7          // Includes
+   8          //-----------------------------------------------------------------------------
+   9          #include <c8051f020.h> // SFR declarations
+  10          
+  11          #include <stdio.h>
+  12          #include <string.h>
+  13          #include <stdlib.h>
+  14          
+  15          
+  16          //-----------------------------------------------------------------------------
+  17          // Global CONSTANTS
+  18          //----------------------------------------------------------------------------
+  19          
+  20          #define SYSCLK       22118400          
+  21          // SYSCLK frequency in Hz
+  22          #define BAUDRATE     115200
+  23          // Baud rate of UART in bps
+  24          
+  25          //-----------------------------------------------------------------------------
+  26          // Function PROTOTYPES
+  27          //-----------------------------------------------------------------------------
+  28          
+  29          void SYSCLK_Init (void);
+  30          
+  31          void UART0_Init (void);
+  32          
+  33          void PORT_Init (void);
+  34          
+  35          char Lecture_Guidage (void);
+  36          
+  37          char Recup_char (void);
+  38          
+  39          //-----------------------------------------------------------------------------
+  40          // Global VARIABLES
+  41          //-----------------------------------------------------------------------------
+  42          
+  43          char val_guidage;
+  44          
+  45          
+  46          //-----------------------------------------------------------------------------
+  47          // MAIN Routine
+  48          //-----------------------------------------------------------------------------
+  49          
+  50          void main (void) {
+  51   1      
+  52   1        WDTCN = 0xde; // disable watchdog timer
+  53   1        WDTCN = 0xad;
+  54   1        
+C51 COMPILER V9.59.0.0   MAIN_FFS2                                                         04/29/2021 07:49:54 PAGE 2   
+
+  55   1        SYSCLK_Init(); // initialize oscillator
+  56   1        
+  57   1        PORT_Init(); // initialize IO for UART
+  58   1      
+  59   1        UART0_Init(); // initialize UART0   
+  60   1        
+  61   1        while(1)
+  62   1          {
+  63   2            if(RI0 == 1)
+  64   2              {
+  65   3              val_guidage = Recup_char(); // On récupère la valeur reçue.
+  66   3              }
+  67   2              
+  68   2          
+  69   2          
+  70   2          
+  71   2          }
+  72   1        
+  73   1      }
+  74          
+  75          
+  76          //-----------------------------------------------------------------------------
+  77          // Sous routines d'initialisation du système de réception
+  78          //-----------------------------------------------------------------------------
+  79          // SYSCLK_Init
+  80          //-----------------------------------------------------------------------------//
+  81          // This routine initializes the system clock to use an 22.1184MHz crystal
+  82          // as its clock source.
+  83          //
+  84          void SYSCLK_Init (void){
+  85   1        int i;
+  86   1        // delay counter
+  87   1        OSCXCN = 0x67;
+  88   1        // start external oscillator with
+  89   1        // 22.1184MHz crystal
+  90   1        for (i=0; i < 256; i++) ;
+  91   1        // wait for XTLVLD to stabilize
+  92   1        while (!(OSCXCN & 0x80)) ;
+  93   1        // Wait for crystal osc. to settle
+  94   1        OSCICN = 0x88;
+  95   1        // select external oscillator as SYSCLK
+  96   1        // source and enable missing clock
+  97   1        // detector
+  98   1        }
+  99          
+ 100            
+ 101            //-----------------------------------------------------------------------------
+ 102          // UART0_Init  Configure the UART0 using Timer1, for <baudrate> and 8-N-1.
+ 103          //-----------------------------------------------------------------------------
+ 104          void UART0_Init (void){
+ 105   1            SCON0  = 0x50; // SCON0: mode 1, 8-bit UART, enable RX
+ 106   1            TMOD   = 0x20; // TMOD: timer 1, mode 2, 8-bit reload 
+ 107   1            TH1    = -(SYSCLK/BAUDRATE/16); // set Timer1 reload value for baudrate
+ 108   1            TR1    = 1; // start Timer1
+ 109   1            CKCON |= 0x10; // Timer1 uses SYSCLK as time base
+ 110   1            PCON  |= 0x80; // SMOD00 = 1
+ 111   1      }
+ 112          
+ 113          //-----------------------------------------------------------------------------
+ 114          // PORT_Init Configure the Crossbar and GPIO ports
+ 115          //-----------------------------------------------------------------------------
+ 116          void PORT_Init (void){
+C51 COMPILER V9.59.0.0   MAIN_FFS2                                                         04/29/2021 07:49:54 PAGE 3   
+
+ 117   1          XBR0    |= 0x04;
+ 118   1          // Enable UART0
+ 119   1          XBR2    |= 0x64;
+ 120   1          // Enable crossbar and weak pull-ups  
+ 121   1          P0MDOUT |= 0x01;
+ 122   1          // enable TX0 as a push-pull output  
+ 123   1          
+ 124   1          }
+ 125          
+ 126              
+ 127          //-----------------------------------------------------------------------------
+ 128          // Lecture_Guidage // fonction qui retourne la dernière val de guidage 
+ 129          //-----------------------------------------------------------------------------   
+ 130          char Lecture_Guidage(void)
+ 131            {
+ 132   1        return val_guidage;
+ 133   1        } 
+ 134          
+ 135          //-----------------------------------------------------------------------------
+ 136          // Recup_char // fonction qui recupere la val envoyée par la balise  
+ 137          //----------------------------------------------------------------------------- 
+ 138          char Recup_char(void)
+ 139          {
+ 140   1          
+ 141   1        char c;
+ 142   1      
+ 143   1        //Desactive la reception
+ 144   1        RI0 = 0;
+ 145   1        REN0 = 0;
+ 146   1        
+ 147   1        //Recup le caractere
+ 148   1        c = SBUF0;
+ 149   1        
+ 150   1        //Reactive la reception
+ 151   1        REN0 = 1;
+ 152   1        
+ 153   1        return c;
+ 154   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     93    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

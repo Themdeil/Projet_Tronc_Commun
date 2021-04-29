@@ -1,0 +1,206 @@
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    04/29/2021  07:49:54  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\Objects\main_FFS2.obj, .\Objects\STARTUP.obj TO .\Objects\Projet TC F0S2 PRINT (.\Listings
+>> \Projet TC F0S2.m51) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\main_FFS2.obj (MAIN_FFS2)
+  .\Objects\STARTUP.obj (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  .\Objects\Projet TC F0S2 (MAIN_FFS2)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0001H     UNIT         ?DT?MAIN_FFS2
+            IDATA   0009H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     001CH     UNIT         ?PR?SYSCLK_INIT?MAIN_FFS2
+            CODE    001FH     0019H     UNIT         ?PR?MAIN?MAIN_FFS2
+            CODE    0038H     0012H     UNIT         ?PR?UART0_INIT?MAIN_FFS2
+            CODE    004AH     000CH     UNIT         ?C_C51STARTUP
+            CODE    0056H     000AH     UNIT         ?PR?PORT_INIT?MAIN_FFS2
+            CODE    0060H     0009H     UNIT         ?PR?RECUP_CHAR?MAIN_FFS2
+            CODE    0069H     0003H     UNIT         ?PR?LECTURE_GUIDAGE?MAIN_FFS2
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\Projet TC F0S2 (MAIN_FFS2)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?MAIN_FFS2
+
+?PR?MAIN?MAIN_FFS2
+  +--> ?PR?SYSCLK_INIT?MAIN_FFS2
+  +--> ?PR?PORT_INIT?MAIN_FFS2
+  +--> ?PR?UART0_INIT?MAIN_FFS2
+  +--> ?PR?RECUP_CHAR?MAIN_FFS2
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\Projet TC F0S2 (MAIN_FFS2)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  04/29/2021  07:49:54  PAGE 2
+
+
+  -------         MODULE        MAIN_FFS2
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0008H         PUBLIC        val_guidage
+  D:00FFH         PUBLIC        WDTCN
+  C:0060H         PUBLIC        Recup_char
+  D:00E8H         PUBLIC        ADC0CN
+  D:00A4H         PUBLIC        P0MDOUT
+  D:00A8H         PUBLIC        IE
+  B:0098H.4       PUBLIC        REN0
+  D:00D8H         PUBLIC        PCA0CN
+  D:00B8H         PUBLIC        IP
+  D:00E1H         PUBLIC        XBR0
+  D:00E3H         PUBLIC        XBR2
+  D:00C0H         PUBLIC        SMB0CN
+  C:001FH         PUBLIC        main
+  D:00F8H         PUBLIC        SPI0CN
+  D:0087H         PUBLIC        PCON
+  D:0089H         PUBLIC        TMOD
+  D:0088H         PUBLIC        TCON
+  C:0056H         PUBLIC        PORT_Init
+  D:00B2H         PUBLIC        OSCICN
+  B:0098H.0       PUBLIC        RI0
+  D:008DH         PUBLIC        TH1
+  D:00B1H         PUBLIC        OSCXCN
+  C:0003H         PUBLIC        SYSCLK_Init
+  B:0088H.6       PUBLIC        TR1
+  D:0099H         PUBLIC        SBUF0
+  C:0038H         PUBLIC        UART0_Init
+  D:0098H         PUBLIC        SCON0
+  D:00C8H         PUBLIC        T2CON
+  D:008EH         PUBLIC        CKCON
+  C:0069H         PUBLIC        Lecture_Guidage
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          MAIN
+  C:001FH         LINE#         50
+  C:001FH         LINE#         52
+  C:0022H         LINE#         53
+  C:0025H         LINE#         55
+  C:0028H         LINE#         57
+  C:002BH         LINE#         59
+  C:002EH         LINE#         61
+  C:002EH         LINE#         62
+  C:002EH         LINE#         63
+  C:0031H         LINE#         64
+  C:0031H         LINE#         65
+  C:0036H         LINE#         66
+  C:0036H         LINE#         71
+  -------         ENDPROC       MAIN
+  -------         PROC          SYSCLK_INIT
+  -------         DO            
+  D:0006H         SYMBOL        i
+  -------         ENDDO         
+  C:0003H         LINE#         84
+  C:0003H         LINE#         87
+  C:0006H         LINE#         90
+  C:0016H         LINE#         92
+  C:001BH         LINE#         94
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  04/29/2021  07:49:54  PAGE 3
+
+
+  C:001EH         LINE#         98
+  -------         ENDPROC       SYSCLK_INIT
+  -------         PROC          UART0_INIT
+  C:0038H         LINE#         104
+  C:0038H         LINE#         105
+  C:003BH         LINE#         106
+  C:003EH         LINE#         107
+  C:0041H         LINE#         108
+  C:0043H         LINE#         109
+  C:0046H         LINE#         110
+  C:0049H         LINE#         111
+  -------         ENDPROC       UART0_INIT
+  -------         PROC          PORT_INIT
+  C:0056H         LINE#         116
+  C:0056H         LINE#         117
+  C:0059H         LINE#         119
+  C:005CH         LINE#         121
+  C:005FH         LINE#         124
+  -------         ENDPROC       PORT_INIT
+  -------         PROC          LECTURE_GUIDAGE
+  C:0069H         LINE#         130
+  C:0069H         LINE#         131
+  C:0069H         LINE#         132
+  C:006BH         LINE#         133
+  -------         ENDPROC       LECTURE_GUIDAGE
+  -------         PROC          RECUP_CHAR
+  -------         DO            
+  D:0007H         SYMBOL        c
+  -------         ENDDO         
+  C:0060H         LINE#         138
+  C:0060H         LINE#         139
+  C:0060H         LINE#         144
+  C:0062H         LINE#         145
+  C:0064H         LINE#         148
+  C:0066H         LINE#         151
+  C:0068H         LINE#         153
+  C:0068H         LINE#         154
+  -------         ENDPROC       RECUP_CHAR
+  -------         ENDMOD        MAIN_FFS2
+
+  -------         MODULE        ?C_STARTUP
+  C:004AH         SEGMENT       ?C_C51STARTUP
+  I:0009H         SEGMENT       ?STACK
+  C:0000H         PUBLIC        ?C_STARTUP
+  D:00E0H         SYMBOL        ACC
+  D:00F0H         SYMBOL        B
+  D:0083H         SYMBOL        DPH
+  D:0082H         SYMBOL        DPL
+  N:0000H         SYMBOL        IBPSTACK
+  N:0100H         SYMBOL        IBPSTACKTOP
+  N:0080H         SYMBOL        IDATALEN
+  C:004DH         SYMBOL        IDATALOOP
+  N:0000H         SYMBOL        PBPSTACK
+  N:0100H         SYMBOL        PBPSTACKTOP
+  N:0000H         SYMBOL        PDATALEN
+  N:0000H         SYMBOL        PDATASTART
+  N:0000H         SYMBOL        PPAGE
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  04/29/2021  07:49:54  PAGE 4
+
+
+  N:0000H         SYMBOL        PPAGEENABLE
+  D:00A0H         SYMBOL        PPAGE_SFR
+  D:0081H         SYMBOL        SP
+  C:004AH         SYMBOL        STARTUP1
+  N:0000H         SYMBOL        XBPSTACK
+  N:0000H         SYMBOL        XBPSTACKTOP
+  N:0000H         SYMBOL        XDATALEN
+  N:0000H         SYMBOL        XDATASTART
+  C:0000H         LINE#         126
+  C:004AH         LINE#         133
+  C:004CH         LINE#         134
+  C:004DH         LINE#         135
+  C:004EH         LINE#         136
+  C:0050H         LINE#         185
+  C:0053H         LINE#         196
+  -------         ENDMOD        ?C_STARTUP
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?LECTURE_GUIDAGE?MAIN_FFS2
+
+Program Size: data=10.0 xdata=0 code=108
+LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)

@@ -129,6 +129,7 @@ void PORT_Init (void){
 //-----------------------------------------------------------------------------		
 char Lecture_Guidage(void)
 	{
+		
 	return val_guidage;
 	}	
 

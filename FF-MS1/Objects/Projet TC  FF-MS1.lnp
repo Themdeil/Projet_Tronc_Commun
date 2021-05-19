@@ -1,0 +1,4 @@
+".\Objects\STARTUP.obj",
+".\Objects\main_FF_MS1_Slave.obj" 
+TO ".\Objects\Projet TC  FF-MS1" 
+PRINT(".\Listings\Projet TC  FF-MS1.m51") RAMSIZE(256) 

@@ -1,0 +1,171 @@
+C51 COMPILER V9.59.0.0   MAIN_FF_MS1_MASTER                                                05/19/2021 09:08:16 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN_FF_MS1_MASTER
+OBJECT MODULE PLACED IN .\Objects\main_FF_MS1_Master.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main_FF_MS1_Master.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND P
+                    -RINT(.\Listings\main_FF_MS1_Master.lst) TABS(2) OBJECT(.\Objects\main_FF_MS1_Master.obj)
+
+line level    source
+
+   1          //-----------------------------------------------------------------------------
+   2          // main_FF-MS1_Master.c
+   3          //-----------------------------------------------------------------------------
+   4          //// AUTH: Hadrien Barret// DATE: 11/05/21
+   5          
+   6          //-----------------------------------------------------------------------------
+   7          // Includes
+   8          //-----------------------------------------------------------------------------
+   9          #include <c8051f020.h> // SFR declarations
+  10          #include <c8051f020_SFR16.h>
+  11          
+  12          
+  13          
+  14          
+  15          
+  16          //-----------------------------------------------------------------------------
+  17          // Global CONSTANTS and Ports definition
+  18          //-----------------------------------------------------------------------------
+  19          
+  20          sbit FF_MS1_SELECT_SLAVE = P2^0;
+  21          
+  22          //-----------------------------------------------------------------------------
+  23          // Fonctions prototypes
+  24          //-----------------------------------------------------------------------------
+  25          
+  26          void SYSCLK_Init (void);
+  27          void WD_disable (void);
+  28          void Envoyer_MSG(char c);
+  29          void MASTER_SPI0_Configuration(void);
+  30          void INT_TRANSMISSION_SPI0(void);
+  31          void MASTER_Pins_Configuration(void);
+  32          
+  33          
+  34          //-----------------------------------------------------------------------------
+  35          // MAIN Routine
+  36          //-----------------------------------------------------------------------------
+  37          void main (void) {
+  38   1      
+  39   1        WD_disable(); // Désactive Watchdog 
+  40   1        SYSCLK_Init(); // initialize oscillator
+  41   1        MASTER_SPI0_Configuration();
+  42   1        MASTER_Pins_Configuration();
+  43   1        
+  44   1        while (1){
+  45   2          int i;
+  46   2          for(i=0; i<500;i++){}
+  47   2          Envoyer_MSG(0xFE);
+  48   2            
+  49   2          }
+  50   1      }
+  51          
+  52          //-----------------------------------------------------------------------------
+  53          // Sous routine d'init de la clk système
+  54          //-----------------------------------------------------------------------------
+C51 COMPILER V9.59.0.0   MAIN_FF_MS1_MASTER                                                05/19/2021 09:08:16 PAGE 2   
+
+  55          
+  56          void SYSCLK_Init (void){
+  57   1        int i;
+  58   1        // delay counter
+  59   1        OSCXCN = 0x67;
+  60   1        // start external oscillator with
+  61   1        // 22.1184MHz crystal
+  62   1        for (i=0; i < 256; i++) ;
+  63   1        // wait for XTLVLD to stabilize
+  64   1        while (!(OSCXCN & 0x80)) ;
+  65   1        // Wait for crystal osc. to settle
+  66   1        OSCICN = 0x88;
+  67   1        // select external oscillator as SYSCLK
+  68   1        // source and enable missing clock
+  69   1        // detector
+  70   1        }
+  71          
+  72          
+  73          //-----------------------------------------------------------------------------
+  74          // Sous-routine de desable du watchdog 
+  75          //-----------------------------------------------------------------------------
+  76            
+  77          void WD_disable (void){
+  78   1        WDTCN = 0xde; // disable watchdog timer
+  79   1        WDTCN = 0xad;
+  80   1        } 
+  81          
+  82          //-----------------------------------------------------------------------------
+  83          // Sous-routine de config de la liasion SPI0 pour la carte Master 
+  84          //-----------------------------------------------------------------------------
+  85            
+  86          void MASTER_SPI0_Configuration(void){
+  87   1        
+  88   1        FF_MS1_SELECT_SLAVE = 1;
+  89   1        
+  90   1        //Enabled/Disabled : SPIEN, SPI0CN.0
+  91   1        //Mode master : MSTEN, SPI0CN.1 = 1
+  92   1        SPI0CN |= (3<<0);
+  93   1        
+  94   1        //SPI0CFG[2:0] = 111 pour 8 bits de donnees
+  95   1        //SPI0CFG[5:3] : savoir quel est le dernier bit qui a ete transfere
+  96   1        SPI0CFG |= (7<<0);
+  97   1        
+  98   1        //Vitesse de transfert = SYSCLK/(2*(SPI0CKR+1))
+  99   1        SPI0CKR = 0x09; 
+ 100   1      }
+ 101          
+ 102          //-----------------------------------------------------------------------------
+ 103          // Sous-routines de config des ports pour la carte Master
+ 104          //-----------------------------------------------------------------------------
+ 105          void MASTER_Pins_Configuration(void){
+ 106   1        //SPI0
+ 107   1        XBR0 |= (1<<1);
+ 108   1        
+ 109   1        //Crossbar on
+ 110   1        XBR2 |= (1<<6);
+ 111   1        
+ 112   1        //Push-pull
+ 113   1        P0MDOUT |= (1<<0) + (1<<1) + (1<<3); //MISO, NSS MASTER
+ 114   1        P2MDOUT |= (1<<0);
+ 115   1        
+ 116   1      }
+C51 COMPILER V9.59.0.0   MAIN_FF_MS1_MASTER                                                05/19/2021 09:08:16 PAGE 3   
+
+ 117          
+ 118          //-----------------------------------------------------------------------------
+ 119          // Sous-routines de communication
+ 120          //-----------------------------------------------------------------------------
+ 121          
+ 122          void Envoyer_MSG(char c){
+ 123   1        //On dit au slave d'ecouter
+ 124   1        FF_MS1_SELECT_SLAVE = 0;
+ 125   1        
+ 126   1        //Ecriture et debut transfert du code
+ 127   1        SPI0DAT = c;
+ 128   1        SPIF = 0;
+ 129   1        //Attente de la fin de la transmission
+ 130   1        while(SPIF != 1){}
+ 131   1        SPIF = 0;
+ 132   1        //Desactive l'ecoute du slave
+ 133   1        FF_MS1_SELECT_SLAVE = 1;
+ 134   1      }
+ 135          
+ 136          
+ 137          //-----------------------------------------------------------------------------
+ 138          // Sous-routines des fonctions d'interruption
+ 139          //-----------------------------------------------------------------------------
+ 140          
+ 141          void INT_TRANSMISSION_SPI0(void) interrupt 6 {
+ 142   1        SPIF = 0; 
+ 143   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    129    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       2
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
